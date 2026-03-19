@@ -1,0 +1,45 @@
+@import "tailwindcss";
+/* index.css */
+/* index.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Syncopate:wght@400;700&display=swap');
+
+:root {
+  --gold: #c5a059;
+  --obsidian: #050505;
+  --white: #ffffff;
+}
+
+body {
+  background-color: var(--obsidian);
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Cinematic Overlays */
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 60;
+  mix-blend-mode: overlay;
+}
+
+.ui-text {
+  font-family: 'Syncopate', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 10px;
+}
