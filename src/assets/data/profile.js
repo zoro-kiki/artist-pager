@@ -11,7 +11,7 @@ const profiles = [
   {
     name: "BHAWANA RAJPUT",
     location: "AHMEDABAD, India",
-    status: "Private Collection",
+    status: "0 Artwork for sale",
     country: "USA",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_cead2dc0529640c7804c6133068a8548.jpg",
@@ -19,7 +19,7 @@ const profiles = [
   {
     name: "Priyanka Bardhan",
     location: "Newdelhi, India",
-    status: "Artwork for Sale",
+    status: " 2 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_6ca65eccfa604a95f3bff20f64e5fbd8.jpg",
@@ -27,7 +27,7 @@ const profiles = [
   {
     name: "Madhushree Pawar",
     location: "Ahemdabad , India",
-    status: "Artwork for Sale",
+    status: " 10 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_7cb4901b38fa7a380ae9dbafc8eb2b42.jpg",
