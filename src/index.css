@@ -1,10 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Syncopate:wght@400;700&display=swap');
 @import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* index.css */
-/* index.css */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Syncopate:wght@400;700&display=swap');
 
 :root {
   --gold: #c5a059;
@@ -21,23 +20,19 @@ body {
   overscroll-behavior: none;
 }
 
-/* Cinematic Overlays */
-.vignette {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
-  pointer-events: none;
-  z-index: 50;
+/* Mobile Fixes */
+@media (max-width: 768px) {
+  body { overflow-y: auto; }
+  .custom-cursor { display: none !important; }
 }
 
-.grain {
-  position: fixed;
-  inset: 0;
-  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 60;
-  mix-blend-mode: overlay;
+/* Premium Scrollbar for Dropdowns */
+.select__menu-list::-webkit-scrollbar {
+  width: 4px;
+}
+.select__menu-list::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 10px;
 }
 
 .ui-text {
