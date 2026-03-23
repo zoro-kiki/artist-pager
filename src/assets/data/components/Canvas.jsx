@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { Draggable } from 'gsap/Draggable';
 import LuxuryCard from './LuxuryCard';
-import profilesData from '../profile';
+import profilesData from '../profile'; 
 
 gsap.registerPlugin(Draggable);
 
@@ -14,54 +14,82 @@ const Canvas = () => {
   const proxy = useRef(document.createElement("div"));
   
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ country: 'All' });
+  const [filters, setFilters] = useState({ 
+    country: 'All', 
+    category: 'All', 
+    special: 'All' 
+  });
 
-  // 1. Unique Data Logic (No repetition)
   const rowData = useMemo(() => {
-    const filtered = profilesData.filter(p => 
-      p.name.toLowerCase().includes(search.toLowerCase()) &&
-      (filters.country === 'All' || p.country === filters.country)
-    );
-    const rows = [[], [], [], []];
-    filtered.forEach((p, i) => rows[i % 4].push(p));
-    return { rows, totalCount: filtered.length };
+    const filtered = profilesData.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchCountry = filters.country === 'All' || p.country.trim() === filters.country;
+      const matchCategory = filters.category === 'All' || p.category === filters.category;
+      const matchSpecial = filters.special === 'All' || 
+                           (filters.special === 'For Sale' && p.status.toLowerCase().includes('sale')) ||
+                           (filters.special === 'Private' && p.status.toLowerCase().includes('private'));
+
+      return matchSearch && matchCountry && matchCategory && matchSpecial;
+    });
+
+    if (filtered.length === 0) return { rows: [], totalCount: 0 };
+    const baseRows = [[], [], [], []];
+    filtered.forEach((p, i) => baseRows[i % 4].push(p));
+    const infiniteRows = baseRows.map(row => {
+      const tripled = [...row, ...row, ...row];
+      return tripled.map((item, idx) => ({
+        ...item,
+        uniqueId: `${item.name}-${idx}-${Math.random()}` 
+      }));
+    });
+    return { 
+      rows: infiniteRows, 
+      totalCount: infiniteRows.reduce((acc, row) => acc + row.length, 0) 
+    };
   }, [search, filters]);
 
   useEffect(() => {
-    const WORLD_SIZE = 3000; // Total scrollable area
+    if (rowData.totalCount === 0) return;
     const grid = gridRef.current;
-    
-    // Set initial position to the center/top area so it's not "at the bottom"
-    gsap.set(proxy.current, { x: -100, y: -100 });
-    
+    cardRefs.current = [];
+
+    const getLoopPoints = () => ({
+      loopX: grid.offsetWidth / 3,
+      loopY: grid.offsetHeight / 3
+    });
+
+    let { loopX, loopY } = getLoopPoints();
     const setGridX = gsap.quickSetter(grid, "x", "px");
     const setGridY = gsap.quickSetter(grid, "y", "px");
 
-    const update = (x, y) => {
-      // Wrapping logic creates the "Infinite" effect
-      setGridX(gsap.utils.wrap(-WORLD_SIZE, 0, x));
-      setGridY(gsap.utils.wrap(-WORLD_SIZE, 0, y));
+    const update = () => {
+      const x = gsap.getProperty(proxy.current, "x");
+      const y = gsap.getProperty(proxy.current, "y");
+      setGridX(gsap.utils.wrap(-loopX, 0, x));
+      setGridY(gsap.utils.wrap(-loopY, 0, y));
     };
 
     const dragInstance = Draggable.create(proxy.current, {
       type: "x,y",
       trigger: containerRef.current,
       inertia: true,
-      onDrag: () => update(dragInstance[0].x, dragInstance[0].y),
-      onThrowUpdate: () => update(dragInstance[0].x, dragInstance[0].y)
+      onDrag: update,
+      onThrowUpdate: update,
+      allowNativeTouchScrolling: false,
+      // ✅ FIX: This prevents Draggable from stopping clicks on <select> and <input>
+      dragClickables: false, 
     });
 
-    // Fading logic for edges
     const onTick = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+      const pad = 240;
       cardRefs.current.forEach((card) => {
-        if (!card) return;
+        if (!card || !card.getBounds) return;
         const b = card.getBounds();
         if (!b) return;
         const cX = b.left + b.width / 2;
         const cY = b.top + b.height / 2;
-        const pad = 200;
         const opX = gsap.utils.mapRange(0, pad, 0, 1, gsap.utils.clamp(0, pad, cX)) * 
                    gsap.utils.mapRange(vw - pad, vw, 1, 0, gsap.utils.clamp(vw - pad, vw, cX));
         const opY = gsap.utils.mapRange(0, pad, 0, 1, gsap.utils.clamp(0, pad, cY)) * 
@@ -71,68 +99,100 @@ const Canvas = () => {
     };
 
     gsap.ticker.add(onTick);
-    update(-100, -100); // Initial call to position grid
+    gsap.set(proxy.current, { x: -100, y: -100 });
+    update();
 
-    const onMouseMove = (e) => gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.6 });
+    const onMouseMove = (e) => gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power3.out" });
+    const onResize = () => { const p = getLoopPoints(); loopX = p.loopX; loopY = p.loopY; update(); };
+
     window.addEventListener("mousemove", onMouseMove);
-
+    window.addEventListener("resize", onResize);
     return () => {
       gsap.ticker.remove(onTick);
       window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("resize", onResize);
+      if (dragInstance[0]) dragInstance[0].kill();
     };
   }, [rowData]);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 bg-[#0a0a0a] overflow-hidden cursor-none select-none">
+    <main ref={containerRef} className="fixed inset-0 bg-[#070707] overflow-hidden cursor-none select-none">
       
-      {/* FILTER BAR - Spaced correctly */}
-      <div className="fixed top-10 left-0 w-full z-[100] flex justify-center pointer-events-none">
-        <div className="flex items-center gap-12 bg-black/80 backdrop-blur-2xl border border-white/10 p-4 px-10 rounded-full pointer-events-auto shadow-2xl">
-          <div className="border-r border-white/10 pr-8">
-            <input 
-              type="text" 
-              placeholder="SEARCH ARTISTS..."
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-[10px] tracking-[0.4em] uppercase outline-none w-48 text-white placeholder:text-white/20"
-            />
-          </div>
-          <div className="flex gap-10 items-center">
-             <select className="bg-transparent text-[10px] tracking-[0.2em] outline-none text-white/60 hover:text-[#d4af37] cursor-pointer">
-                <option value="All">ALL COUNTRIES</option>
-             </select>
-             <button className="text-[10px] tracking-[0.2em] text-[#d4af37] font-bold">ARTWORK FOR SALE</button>
-          </div>
+      {/* LUXURY FILTERS */}
+      <nav className="fixed top-10 left-0 w-full z-[100] flex justify-center items-center gap-4 pointer-events-none px-6">
+        
+        {/* SEARCH */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-8 rounded-full shadow-xl">
+          <input 
+            type="text" 
+            placeholder="SEARCH ARTIST..."
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent text-[11px] tracking-[0.3em] uppercase outline-none w-32 md:w-48 text-white placeholder:text-white/20"
+          />
         </div>
+
+        {/* CATEGORY */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-6 rounded-full shadow-xl">
+          <select 
+            className="bg-transparent text-[11px] tracking-[0.2em] outline-none text-white/70 hover:text-[#d4af37] cursor-pointer uppercase transition-colors"
+            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+          >
+            <option className="bg-[#111] text-white" value="All">CATEGORY</option>
+            <option className="bg-[#111] text-white" value="Sculpture">Sculpture</option>
+            <option className="bg-[#111] text-white" value="Painting">Painting</option>
+            <option className="bg-[#111] text-white" value="Digital">Digital Art</option>
+          </select>
+        </div>
+
+        {/* COUNTRY */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-6 rounded-full shadow-xl">
+          <select 
+            className="bg-transparent text-[11px] tracking-[0.2em] outline-none text-white/70 hover:text-[#d4af37] cursor-pointer uppercase transition-colors"
+            onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+          >
+            <option className="bg-[#111] text-white" value="All">COUNTRY</option>
+            <option className="bg-[#111] text-white" value="India">India</option>
+            <option className="bg-[#111] text-white" value="USA">USA</option>
+            <option className="bg-[#111] text-white" value="France">France</option>
+          </select>
+        </div>
+
+        {/* SPECIALTY */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-6 rounded-full shadow-xl">
+          <select 
+            className="bg-transparent text-[11px] tracking-[0.2em] outline-none text-white/70 hover:text-[#d4af37] cursor-pointer uppercase transition-colors"
+            onChange={(e) => setFilters({ ...filters, special: e.target.value })}
+          >
+            <option className="bg-[#111] text-white" value="All">SPECIALTY</option>
+            <option className="bg-[#111] text-white" value="For Sale">For Sale</option>
+            <option className="bg-[#111] text-white" value="Private">Private</option>
+          </select>
+        </div>
+
+      </nav>
+
+      {/* LUXURY CURSOR */}
+      <div ref={cursorRef} className="fixed top-0 left-0 w-12 h-12 border border-[#d4af37]/40 rounded-full z-[101] pointer-events-none flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+        <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full shadow-[0_0_12px_#d4af37]" />
       </div>
 
-      {/* CURSOR */}
-      <div ref={cursorRef} className="fixed top-0 left-0 w-10 h-10 border border-[#d4af37]/50 rounded-full z-[101] pointer-events-none flex items-center justify-center">
-        <div className="w-1 h-1 bg-[#d4af37]" />
-      </div>
-
-      {/* THE GRID - Starting position fixed */}
-      <div 
-        ref={gridRef} 
-        className="absolute top-0 left-0 flex flex-col gap-24 p-20 pt-40" 
-        style={{ willChange: "transform" }}
-      >
+      <section ref={gridRef} className="absolute top-0 left-0 flex flex-col gap-10 p-20 pt-44 w-max" style={{ willChange: "transform" }}>
         {rowData.rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex gap-16" style={{ paddingLeft: rowIndex % 2 === 0 ? '0' : '100px' }}>
-            {row.map((p, i) => (
+          <div key={rowIndex} className="flex gap-10" style={{ paddingLeft: rowIndex % 2 === 0 ? '0' : '50px' }}>
+            {row.map((profile) => (
               <LuxuryCard 
-                key={p.id} 
-                ref={el => cardRefs.current[i + (rowIndex * 10)] = el} 
-                profile={p} 
-                index={i} 
+                key={profile.uniqueId} 
+                profile={profile} 
+                ref={el => { if(el) cardRefs.current.push(el) }} 
               />
             ))}
           </div>
         ))}
-      </div>
+      </section>
       
-      {/* VIGNETTE */}
-      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_150px_black] z-50" />
-    </div>
+      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_300px_black] z-50" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-[#070707] via-transparent to-[#070707] opacity-90 z-40" />
+    </main>
   );
 };
 

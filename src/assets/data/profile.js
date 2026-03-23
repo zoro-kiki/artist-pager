@@ -3,7 +3,7 @@ const profiles = [
   {
     name: "yashowar verma",
     location: "Udaipur, India",
-    status: " 0 Artwork for Sale",
+    status: "1 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_2fb67bc2b1b227621eadc7d29d6bfebe.jpeg",
@@ -19,7 +19,7 @@ const profiles = [
   {
     name: "Priyanka Bardhan",
     location: "Newdelhi, India",
-    status: " 2 Artwork for Sale",
+    status: "7 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_6ca65eccfa604a95f3bff20f64e5fbd8.jpg",
@@ -27,7 +27,7 @@ const profiles = [
   {
     name: "Madhushree Pawar",
     location: "Ahemdabad , India",
-    status: " 10 Artwork for Sale",
+    status: " 5 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_7cb4901b38fa7a380ae9dbafc8eb2b42.jpg",
@@ -35,7 +35,7 @@ const profiles = [
   {
     name: "Vivek Kisan Vadkar",
     location: "Karjat, India",
-    status: "Private Collection",
+    status: " 3 Artwork for Sale",
     country: "India",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_fbcb02ffe4f2ed72538c4e24054f74e3.png",
@@ -43,7 +43,7 @@ const profiles = [
   {
     name: "PANCHU GHARAMI",
     location: "KOLKATA, India",
-    status: "Artwork for Sale",
+    status: " 20 Artwork for Sale",
     country: "India",
     category: "Painting",
     image: "	https://zigguratss.com/assets/upload/artist/zigguratss_bc6b2b722eb5f6f13e40a325fa017aac.jpg",
@@ -51,7 +51,7 @@ const profiles = [
    {
     name: "Sangita agarwal",
     location: "Howrah , India",
-    status: "Artwork for Sale",
+    status: " 8 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_83c3b422adf2f31766d3f171c6af966f.jpg",
@@ -59,23 +59,16 @@ const profiles = [
   {
     name: "Dr Ram Bali Prajapati",
     location: "Ghaziabad, India",
-    status: "Private Collection",
+    status: "0 Artwork for Sale",
     country: "India",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist/zigguratss_1ce9628239a06a288bc658d2173d3cba.jpg",
   },
-  {
-    name: "Sangita agarwal",
-    location: "Howrah , India",
-    status: "Artwork for Sale",
-    country: " India",
-    category: "Painting",
-    image: "	https://zigguratss.com/assets/upload/artist/zigguratss_83c3b422adf2f31766d3f171c6af966f.jpg",
-  },
+  
   {
     name: "Sanjana Patel",
     location: "Mumbai, India",
-    status: "Artwork for Sale",
+    status: " 13 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist-871.jpg",
@@ -83,7 +76,7 @@ const profiles = [
   {
     name: "Richard Anbudurai",
     location: "Chennai, India",
-    status: "Private Collection",
+    status:"3 Artwork for Sale",
     country: "India",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist-866.jpeg",
@@ -91,7 +84,7 @@ const profiles = [
   {
     name: "Falak Antani",
     location: "Ahmedabad, India",
-    status: "Artwork for Sale",
+    status: " 4 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist-863.jpg",
@@ -99,7 +92,7 @@ const profiles = [
    {
     name: "PRASENJIT NATH",
     location: "BONGAON, India",
-    status: "Artwork for Sale",
+    status: " 7 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist-855.jpg",
@@ -107,7 +100,7 @@ const profiles = [
   {
     name: "Santosh Kumar Sandilya",
     location: "Varanasi, India",
-    status: "Private Collection",
+    status: "3 Artwork for Sale",
     country: "USA",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist-852.png",
@@ -115,7 +108,7 @@ const profiles = [
   {
     name: "amalesh das",
     location: "Kolkata, India",
-    status: "Artwork for Sale",
+    status: " 0 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist-851.jpg",
@@ -123,7 +116,7 @@ const profiles = [
   {
     name: "Shahbaz",
     location: "Mumbai, India",
-    status: "Artwork for Sale",
+    status: " 1 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist-850.jpg",
@@ -131,7 +124,7 @@ const profiles = [
   {
     name: "Armando Jose Miranda",
     location: "Guaymallén, Argentina",
-    status: "Private Collection",
+    status: "1 Artwork for Sale",
     country: "USA",
     category: "Digital",
     image: "	https://zigguratss.com/assets/upload/artist-845.jpg",
@@ -139,7 +132,7 @@ const profiles = [
   {
     name: "Subham Halder",
     location: "Raghunathganj, India",
-    status: "Artwork for Sale",
+    status: " 2 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist-843.jpeg",
@@ -147,7 +140,7 @@ const profiles = [
   {
     name: "Nandini Saha Ghosh",
     location: "Mumbai, India",
-    status: "Artwork for Sale",
+    status: " 36 Artwork for Sale",
     country: "India",
     category: "Sculpture",
     image: "https://zigguratss.com/assets/upload/artist/artist-844.jpg",
@@ -155,7 +148,7 @@ const profiles = [
   {
     name: "UTTAM MANNA",
     location: "Hooghly, India",
-    status: "Private Collection",
+    status: "9 Artwork for Sale",
     country: "USA",
     category: "Digital",
     image: "https://zigguratss.com/assets/upload/artist-840.jpg",
@@ -163,7 +156,7 @@ const profiles = [
   {
     name: "Bappaditya Roy Chowdhury",
     location: "Delhi, India",
-    status: "Artwork for Sale",
+    status: " 9 Artwork for Sale",
     country: "France",
     category: "Painting",
     image: "https://zigguratss.com/assets/upload/artist-838.jpg",
