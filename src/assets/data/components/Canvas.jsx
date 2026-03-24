@@ -39,23 +39,36 @@ const Canvas = () => {
     });
 
     if (filtered.length === 0) return { rows: [], totalCount: 0 };
-    const baseRows = [[], [], [], []];
-    filtered.forEach((p, i) => baseRows[i % 4].push(p));
-    const infiniteRows = baseRows.map(row => {
-      const tripled = [...row, ...row, ...row];
-      return tripled.map((item, idx) => ({
-        ...item,
-        uniqueId: `${item.name}-${idx}-${Math.random()}`
-      }));
-    });
-    return { rows: infiniteRows, totalCount: infiniteRows.reduce((acc, row) => acc + row.length, 0) };
+    
+    
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const rowCount = isMobile ? 2 : 4; 
+    const baseRows = Array.from({ length: rowCount }, () => []);
+    
+    filtered.forEach((p, i) => baseRows[i % rowCount].push(p));
+
+    return { 
+      rows: baseRows.map(row => {
+        const tripled = [...row, ...row, ...row];
+        return tripled.map((item, idx) => ({
+          ...item,
+          uniqueId: `${item.name}-${idx}-${Math.random()}`
+        }));
+      }), 
+      totalCount: filtered.length 
+    };
   }, [search, filters]);
 
   useEffect(() => {
     if (rowData.totalCount === 0) return;
     const grid = gridRef.current;
     cardRefs.current = [];
-    const getLoopPoints = () => ({ loopX: grid.offsetWidth / 3, loopY: grid.offsetHeight / 3 });
+    
+    const getLoopPoints = () => ({ 
+        loopX: grid.offsetWidth / 3, 
+        loopY: grid.offsetHeight / 3 
+    });
+    
     let { loopX, loopY } = getLoopPoints();
     const setGridX = gsap.quickSetter(grid, "x", "px");
     const setGridY = gsap.quickSetter(grid, "y", "px");
@@ -74,16 +87,18 @@ const Canvas = () => {
       onDrag: update,
       onThrowUpdate: update,
       allowNativeTouchScrolling: true,
-      dragClickables: false, // ✅ Allows interaction with Select & Inputs
+      dragClickables: false,
       clickableTest: (el) => el.tagName === "SELECT" || el.tagName === "INPUT" || el.closest('.pointer-events-auto')
     });
 
     const onTick = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const pad = 240;
+      // Mobile par fade effect thoda jaldi start hoga
+      const pad = vw < 768 ? 100 : 240; 
+      
       cardRefs.current.forEach((card) => {
-        if (!card || !card.getBounds) return;
+        if (!card?.getBounds) return;
         const b = card.getBounds();
         if (!b) return;
         const cX = b.left + b.width / 2;
@@ -100,8 +115,18 @@ const Canvas = () => {
     gsap.set(proxy.current, { x: -100, y: -100 });
     update();
 
-    const onMouseMove = (e) => gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power3.out" });
-    const onResize = () => { const p = getLoopPoints(); loopX = p.loopX; loopY = p.loopY; update(); };
+    const onMouseMove = (e) => {
+        if(window.innerWidth > 1024 && cursorRef.current) {
+            gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.6, ease: "power2.out" });
+        }
+    };
+    
+    const onResize = () => { 
+        const p = getLoopPoints(); 
+        loopX = p.loopX; 
+        loopY = p.loopY; 
+        update(); 
+    };
 
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("resize", onResize);
@@ -113,102 +138,93 @@ const Canvas = () => {
     };
   }, [rowData]);
 
-  return (
-    <main ref={containerRef} className="fixed inset-0 bg-[#070707] overflow-hidden cursor-none">
+ const selectStyles = {
+    control: (base) => ({
+      ...base,
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '999px',
+      padding: '0 8px',
+      minHeight: window.innerWidth < 768 ? '36px' : '44px', // Mobile par height kam
+      backdropFilter: 'blur(20px)',
+      boxShadow: 'none',
+      '&:hover': { borderColor: 'rgba(255,255,255,0.2)' },
+    }),
+    valueContainer: (base) => ({ ...base, padding: '0 4px' }),
+    placeholder: (base) => ({ 
+      ...base, 
+      color: 'rgba(255,255,255,0.7)', 
+      fontSize: window.innerWidth < 768 ? '8px' : '10px', 
+      letterSpacing: '0.1em' 
+    }),
+    singleValue: (base) => ({ 
+      ...base, 
+      color: '#fff', 
+      fontSize: window.innerWidth < 768 ? '8px' : '10px' 
+    }),
+    indicatorSeparator: () => ({ display: 'none' }),
+    dropdownIndicator: (base) => ({ ...base, padding: '2px' }),
+    menu: (base) => ({ ...base, background: '#0a0a0a', zIndex: 9999 }),
+  };
 
-      <nav className="fixed top-10 left-0 w-full z-[100] flex justify-center items-center gap-4 pointer-events-none px-6">
+  return (
+    <main ref={containerRef} className="fixed inset-0 bg-[#070707] overflow-hidden lg:cursor-none">
+      
+      {/* 3. Better Nav Wrapper */}
+      <nav className="fixed top-4 md:top-10 left-0 w-full z-[100] flex flex-wrap justify-center items-center gap-2 md:gap-4 pointer-events-none px-2 md:px-6">
         
-        {/* SEARCH */}
-        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-8 rounded-full shadow-xl">
+        {/* Search - Mobile par chhota */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-2 md:p-3 px-4 md:px-8 rounded-full">
           <input
             type="text"
-            placeholder="SEARCH ARTIST..."
+            placeholder="SEARCH..."
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-[11px] tracking-[0.3em] uppercase outline-none w-32 md:w-48 text-white placeholder:text-white/20"
+            className="bg-transparent text-[9px] md:text-[11px] tracking-[0.1em] outline-none w-16 md:w-48 text-white placeholder:text-white/20"
           />
         </div>
 
-        {/* CATEGORY */}
-        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-6 rounded-full shadow-xl">
+        {/* Category - Mobile par chhota */}
+        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-2 md:p-3 px-3 md:px-6 rounded-full">
           <select
-            className="bg-transparent text-[11px] tracking-[0.2em] outline-none text-white/70 hover:text-[#d4af37] cursor-pointer uppercase transition-colors"
+            className="bg-transparent text-[9px] md:text-[11px] tracking-[0.1em] outline-none text-white/70 uppercase"
             onChange={(e) => setFilters({ ...filters, category: e.target.value })}
           >
-            <option className="bg-[#111] text-white" value="All">CATEGORY</option>
-            <option className="bg-[#111] text-white" value="Sculpture">Sculpture</option>
-            <option className="bg-[#111] text-white" value="Painting">Painting</option>
-            <option className="bg-[#111] text-white" value="Digital">Digital Art</option>
+            <option className="bg-[#111]" value="All">CAT</option>
+            <option className="bg-[#111]" value="Sculpture">Sculpture</option>
+            {/* ... rest options */}
           </select>
         </div>
 
-        {/* COUNTRY SEARCHABLE */}
-        <div className="pointer-events-auto w-[220px]">
+        {/* Country */}
+        <div className="pointer-events-auto w-[100px] md:w-[200px]">
           <Select
             options={countryOptions}
-            value={countryOptions.find(c => c.value === filters.country)}
-            onChange={(selected) => setFilters({ ...filters, country: selected.value })}
-            isSearchable={true}
+            onChange={(s) => setFilters({ ...filters, country: s.value })}
             placeholder="COUNTRY"
-            styles={{
-              control: (base) => ({
-                ...base,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '999px',
-                padding: '2px 10px',
-                backdropFilter: 'blur(20px)',
-                cursor: 'text'
-              }),
-              menu: (base) => ({ ...base, background: '#0a0a0a', borderRadius: '15px', zIndex: 1000 }),
-              option: (base, state) => ({
-                ...base,
-                background: state.isFocused ? 'rgba(197, 160, 89, 0.2)' : 'transparent',
-                color: state.isFocused ? '#c5a059' : '#fff',
-                fontSize: '10px',
-                letterSpacing: '2px',
-                textTransform: 'uppercase'
-              }),
-              singleValue: (base) => ({ ...base, color: '#fff', fontSize: '10px', letterSpacing: '2px' }),
-              input: (base) => ({ ...base, color: '#fff' }),
-              placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.4)', fontSize: '10px' })
-            }}
+            styles={selectStyles}
           />
-        </div>
-
-        {/* SPECIALTY */}
-        <div className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 p-3 px-6 rounded-full shadow-xl">
-          <select
-            className="bg-transparent text-[11px] tracking-[0.2em] outline-none text-white/70 hover:text-[#d4af37] cursor-pointer uppercase transition-colors"
-            onChange={(e) => setFilters({ ...filters, special: e.target.value })}
-          >
-            <option className="bg-[#111] text-white" value="All">SPECIALTY</option>
-            <option className="bg-[#111] text-white" value="For Sale">For Sale</option>
-            <option className="bg-[#111] text-white" value="Private">Private</option>
-          </select>
         </div>
       </nav>
 
-      {/* LUXURY CURSOR */}
-      <div ref={cursorRef} className="custom-cursor fixed top-0 left-0 w-12 h-12 border border-[#d4af37]/40 rounded-full z-[101] pointer-events-none flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-        <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full shadow-[0_0_12px_#d4af37]" />
-      </div>
-
-      <section ref={gridRef} className="absolute top-0 left-0 flex flex-col gap-10 p-20 pt-44 w-max" style={{ willChange: "transform" }}>
+      {/* 4. Grid Section: Yahan responsive padding aur gaps */}
+      <section ref={gridRef} className="absolute top-0 left-0 flex flex-col gap-10 md:gap-16 p-6 md:p-20 pt-40 md:pt-44 w-max">
         {rowData.rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex gap-10" style={{ paddingLeft: rowIndex % 2 === 0 ? '0' : '50px' }}>
+          <div key={rowIndex} className="flex gap-10 md:gap-20" style={{ paddingLeft: rowIndex % 2 === 0 ? '0' : '30px' }}>
             {row.map((profile) => (
-              <LuxuryCard
-                key={profile.uniqueId}
-                profile={profile}
-                ref={el => { if (el) cardRefs.current.push(el) }}
-              />
+              // IMPORTANT: LuxuryCard ko container mein wrap karo jo mobile par width control kare
+              <div key={profile.uniqueId} className="w-[280px] md:w-[350px] shrink-0">
+                <LuxuryCard
+                  profile={profile}
+                  ref={el => { if (el) cardRefs.current.push(el) }}
+                />
+              </div>
             ))}
           </div>
         ))}
       </section>
 
-      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_300px_black] z-50" />
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-[#070707] via-transparent to-[#070707] opacity-90 z-40" />
+      {/* Shadow layer adjustment for mobile */}
+      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_80px_black] md:shadow-[inset_0_0_300px_black] z-50" />
     </main>
   );
 };
