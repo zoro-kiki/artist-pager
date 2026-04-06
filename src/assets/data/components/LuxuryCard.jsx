@@ -53,7 +53,7 @@ const LuxuryCard = memo(forwardRef(({ profile }, ref) => {
         onClick={() => setIsClicked(v => !v)}
         className="flex flex-col group cursor-pointer w-[200px] md:w-[240px] select-none will-change-transform"
       >
-        {/* IMAGE */}
+        {/* IMAGE - Restored to original size/aspect */}
         <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a0a] border border-white/[0.07] group-hover:border-[#d4af37]/40 transition-colors duration-700">
 
           {/* Grain */}
@@ -81,9 +81,9 @@ const LuxuryCard = memo(forwardRef(({ profile }, ref) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         </div>
 
-        {/* META */}
+        {/* META - Refined Font and Colors */}
         <div className="mt-4 px-1">
-          <h3 className="text-[11px] font-serif italic text-[#f7f3f0] group-hover:text-[#d4af37] transition-colors duration-500 tracking-[0.05em] uppercase leading-none">
+          <h3 className="text-[13px] font-serif italic text-[#f7f3f0] group-hover:text-[#d4af37] transition-colors duration-500 tracking-[0.06em] leading-none">
             {profile.name}
           </h3>
 
@@ -91,7 +91,7 @@ const LuxuryCard = memo(forwardRef(({ profile }, ref) => {
           <div className="relative w-full h-[1px] bg-white/[0.04] my-3 overflow-hidden">
             <motion.div
               initial={{ x: '-100%' }}
-              animate={{ x: isClicked ? '0%' : '-100%' }}
+              animate={{ x: isClicked || isHovered ? '0%' : '-100%' }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               className="absolute inset-0 bg-[#d4af37] z-10"
             />
@@ -99,8 +99,12 @@ const LuxuryCard = memo(forwardRef(({ profile }, ref) => {
           </div>
 
           <div className="flex justify-between items-center mb-2">
-            <p className="text-[7px] uppercase tracking-[0.28em] text-white/35 font-medium">{profile.location}</p>
-            <p className="text-[7px] uppercase tracking-[0.2em] text-white/25 group-hover:text-[#d4af37]/70 transition-colors duration-300">{profile.category}</p>
+            <p className="text-[8px] uppercase tracking-[0.28em] text-white/35 font-medium group-hover:text-white/50 transition-colors">
+              {profile.location}
+            </p>
+            <p className="text-[8px] uppercase tracking-[0.15em] text-[#d4af37]/60 italic font-light">
+              {profile.category}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -113,7 +117,9 @@ const LuxuryCard = memo(forwardRef(({ profile }, ref) => {
                 className="absolute w-1 h-1 rounded-full bg-[#d4af37]"
               />
             </span>
-            <p className="text-[7px] uppercase tracking-[0.22em] text-[#d4af37] font-bold">{profile.status}</p>
+            <p className="text-[8px] uppercase tracking-[0.22em] text-[#d4af37] font-bold">
+              {profile.status}
+            </p>
           </div>
         </div>
       </motion.article>
