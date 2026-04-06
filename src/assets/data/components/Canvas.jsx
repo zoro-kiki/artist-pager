@@ -29,18 +29,18 @@ const LERP_FACTOR = 0.072;
 
 const Canvas = () => {
   const containerRef = useRef(null);
-  const gridRef     = useRef(null);
-  const cardRefs    = useRef(new Map());
-  const proxy       = useRef(null);
+  const gridRef = useRef(null);
+  const cardRefs = useRef(new Map());
+  const proxy = useRef(null);
   const tickerAdded = useRef(false);
   const smoothPos   = useRef({ x: 0, y: 0 }); 
   const targetPos   = useRef({ x: 0, y: 0 });
 
-  const [isSidebarOpen, setIsSidebarOpen]   = useState(false);
-  const [search, setSearch]                 = useState('');
-  const [filters, setFilters]               = useState(DEFAULT_FILTERS);
-  const [tempFilters, setTempFilters]       = useState(DEFAULT_FILTERS);
-  const [isDragging, setIsDragging]         = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [tempFilters, setTempFilters] = useState(DEFAULT_FILTERS);
+  const [isDragging, setIsDragging] = useState(false);
 
   const countries = useMemo(() => getNames().sort(), []);
 
@@ -81,16 +81,27 @@ const Canvas = () => {
   const openSidebar  = useCallback(() => { setTempFilters(filters); setIsSidebarOpen(true); }, [filters]);
   const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
   const applyFilters = useCallback(() => { setFilters(tempFilters); closeSidebar(); }, [tempFilters, closeSidebar]);
-  const clearTemp    = useCallback(() => setTempFilters(DEFAULT_FILTERS), []);
+  const clearTemp = useCallback(() => setTempFilters(DEFAULT_FILTERS), []);
 
-  /* ─── GSAP drag + lerp ticker ─── */
+  /* ─── Toggle Category Function ─── */
+  const toggleCategory = (cat) => {
+    setTempFilters(prev => {
+      const isSelected = prev.categories.includes(cat);
+      if (isSelected) {
+        return { ...prev, categories: prev.categories.filter(c => c !== cat) };
+      } else {
+        return { ...prev, categories: [...prev.categories, cat] };
+      }
+    });
+  };
+
   useEffect(() => {
     if (!rowData.totalCount) return;
     const grid = gridRef.current;
     if (!grid) return;
     if (!proxy.current) proxy.current = document.createElement('div');
 
-    let loopX = grid.offsetWidth  / 3;
+    let loopX = grid.offsetWidth / 3;
     let loopY = grid.offsetHeight / 3;
 
     const setGridX = gsap.quickSetter(grid, 'x', 'px');
@@ -104,8 +115,8 @@ const Canvas = () => {
         if (!card?.getBounds) return;
         const b = card.getBounds();
         if (!b) return;
-        const cX = b.left + b.width  / 2;
-        const cY = b.top  + b.height / 2;
+        const cX = b.left + b.width / 2;
+        const cY = b.top + b.height / 2;
         const op =
           gsap.utils.mapRange(0, pad, 0, 1, gsap.utils.clamp(0, pad, cX)) *
           gsap.utils.mapRange(vw - pad, vw, 1, 0, gsap.utils.clamp(vw - pad, vw, cX)) *
@@ -125,7 +136,7 @@ const Canvas = () => {
       const wrappedY = gsap.utils.wrap(-loopY, 0, smoothPos.current.y);
       setGridX(wrappedX);
       setGridY(wrappedY);
-      updateCardOpacity(wrappedX, wrappedY);
+      updateCardOpacity();
     };
 
     if (!tickerAdded.current) {
@@ -138,25 +149,18 @@ const Canvas = () => {
 
     const dragInstance = Draggable.create(proxy.current, {
       type: 'x,y',
-      trigger: containerRef.current,
+      trigger: container,
       inertia: true,
       throwResistance: 1800,
       onDragStart: () => setIsDragging(true),
-      onDragEnd:   () => setIsDragging(false),
+      onDragEnd: () => setIsDragging(false),
       allowNativeTouchScrolling: true,
       dragClickables: false,
       clickableTest: (el) => el.tagName === 'INPUT' || el.tagName === 'SELECT' || !!el.closest('button'),
     });
 
-    const onResize = () => {
-      if (!grid) return;
-      loopX = grid.offsetWidth  / 3;
-      loopY = grid.offsetHeight / 3;
-    };
-    window.addEventListener('resize', onResize);
-
     return () => {
-      window.removeEventListener('resize', onResize);
+      container.removeEventListener('wheel', handleWheel);
       if (dragInstance[0]) dragInstance[0].kill();
       gsap.ticker.remove(tick);
       tickerAdded.current = false;
@@ -187,11 +191,11 @@ const Canvas = () => {
         .card-description { line-height: 1.6; letter-spacing: 0.05em; color: rgba(255,255,255,0.5); }
       `}</style>
 
-      {/* ── UI CONTROLS ── */}
+      {/* UI CONTROLS - Same as before */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 md:translate-x-0 md:bottom-auto md:top-8 md:right-8 md:left-auto z-[110] flex flex-col md:flex-row items-center gap-3 w-[90%] md:w-auto pointer-events-none">
         <div className="pointer-events-auto w-full md:w-auto flex items-center bg-black/70 backdrop-blur-2xl border border-white/[0.06] rounded-full px-5 py-3 group focus-within:border-[#d4af37]/40 transition-all duration-300 shadow-2xl">
           <svg className="w-3.5 h-3.5 text-white/20 group-focus-within:text-[#d4af37] transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
           </svg>
           <input
             type="text"
@@ -207,7 +211,7 @@ const Canvas = () => {
           className="pointer-events-auto w-full md:w-auto relative flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-[0.22em] hover:bg-[#d4af37] transition-all duration-300 shadow-xl"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M4 6h16M7 12h10M10 18h4"/>
+            <path d="M4 6h16M7 12h10M10 18h4" />
           </svg>
           Filters
           <AnimatePresence>
@@ -223,7 +227,7 @@ const Canvas = () => {
         </button>
       </div>
 
-      {/* ── SIDEBAR ── */}
+      {/* SIDEBAR */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
@@ -234,9 +238,7 @@ const Canvas = () => {
             />
 
             <motion.aside
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 40, stiffness: 280 }}
               className="fixed top-0 left-0 h-full w-full sm:w-[350px] bg-[#0a0a0a] z-[160] flex flex-col"
               style={{ borderRight: '1px solid rgba(255,255,255,0.04)' }}
